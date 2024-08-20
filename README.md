@@ -1,1 +1,1 @@
-# DDRnet_shyny
+# DDRnet_shiny
