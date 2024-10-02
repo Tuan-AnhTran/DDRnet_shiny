@@ -14,8 +14,6 @@ library(this.path)
 setwd(this.dir())
 
 source('plot.R')
-source('processNetwork.R')
-source('evalNetwork.R')
 
 # about
 about = "DDRnet utilises the xgboost model to explore genetic interactions with 
@@ -36,7 +34,7 @@ threshold. Higher frequency and importance yield more stringent analyses but
 result in fewer interacting genes. Additionally, users can choose from various 
 display options to customize the network visualisation. In cluster mode, users 
 can explore subsets of Pendragon genes, which have been pre-clustered offline 
-(frequency \u2265 3 and importance \u2265 0.08). Adjusting the frequency and importance 
+(frequency \u2265 4 and importance \u2265 0.08). Adjusting the frequency and importance 
 threshold results in different display of gene interactions within the clusters.
 <br><br>
 
@@ -48,39 +46,7 @@ included in our analysis. The list of genes utilised in the DDRnet can be found
 in the “Genes” tab.
 "
 
-netTab = readRDS('xgb_cv_impt_netTab.RDS')
-load('curatedGeneSet.RData')
-
-# get list of all genes in the DDRnet
-geneXgboost = unique(c(netTab$gene_1, netTab$gene_2))
-
-# get net based with freq >= 4, impt >= 0.08 ----
-netFreq4 = netTab %>% 
-  filter(maxCvFreq >= 4 & maxIptDifNormSum >= 0.08) %>% 
-  filter(gene_1 %in% geneList[[11]] & gene_2 %in% geneList[[11]])%>% 
-  select(gene_1, gene_2, maxCvFreq, maxIptDifNormSum) %>% 
-  clusterProfiler::rename(from = gene_1, to = gene_2) %>% 
-  graph_from_data_frame(directed = F)
-
-# cluster genes on the network ----
-clustFreq4 = clustNet(netFreq4)
-
-# convert clusterFreq4 to a list object
-clustFreq4List = list()
-for (i in 1:max(V(clustFreq4)$cluster)){
-  clustFreq4List[[i]] = induced_subgraph(clustFreq4, V(clustFreq4)$cluster == i)
-  clustFreq4List[[i]] = V(clustFreq4List[[i]])$name
-}
-
-# calculate sen and spe
-resultsFreq4 = evalGeneSets(clustFreq4List,
-                            c(1:25),
-                            geneList,
-                            setList[, 1])
-
-resultsFreq4 = resultsFreq4 %>% 
-  filter(targetSet == 'DNA damage response') %>% 
-  arrange(desc(spe))
+load('DDRnetData.RData')
 
 # Define UI for app that draws a gene interaction network ----
 ui <- navbarPage(
@@ -284,7 +250,7 @@ server <- function(input, output, session) {
                {
                  isolatedInput = isolate(input)
                  
-                 net = getClust(clustFreq4, geneList, isolatedInput)
+                 net = getClust(clustFreq4List, isolatedInput)
                  
                  # plot network
                  output$plotClust = renderPlot({
