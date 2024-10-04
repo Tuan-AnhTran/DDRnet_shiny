@@ -250,7 +250,7 @@ server <- function(input, output, session) {
                {
                  isolatedInput = isolate(input)
                  
-                 net = getClust(clustFreq4List, isolatedInput)
+                 net = getClust(clustFreq4List, geneList, isolatedInput)
                  
                  # plot network
                  output$plotClust = renderPlot({
@@ -271,4 +271,5 @@ server <- function(input, output, session) {
 }
 
 
+options(shiny.host = "0.0.0.0", shiny.port = 3838)
 shinyApp(ui = ui, server = server)
