@@ -64,7 +64,7 @@ getNet = function(netTab, geneList, input, seed = 123){
   return(net)
 }
 
-getClust = function(clustFreq4List, input, seed = 123){
+getClust = function(clustFreq4List, geneList, input, seed = 123){
   # get cluster ID from user's input
   clustId = as.numeric(input$cluster)
   
